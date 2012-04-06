@@ -1,6 +1,6 @@
 use Getopt::Std;
 use Data::Dumper;
-
+use List::Member;
 
 # parse cmd opts
 my %opts;
@@ -45,7 +45,7 @@ if ($opts{p} eq "cartesian") {
 }
 
 if ($opts{p} eq "project") {
-    if (!defined $opts{1}){
+    if (!defined $opts{1} || !defined $opts{c}){
         print "Invalid usage, choose 1 relation for PROJECT and a PROJECT-condition\n";
         HELP();
         exit 1;
@@ -53,13 +53,13 @@ if ($opts{p} eq "project") {
     my @rel1, @vars1;
     my $project, $projectVars;
     FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
-    my $var = $opts{c};
-    ($project, $projectVars) = PROJECT(\@rel1, \@vars1, $opts{c});
+    my $cutVars = PARSE_PROJECT_CONDITION($opts{c});
+    ($project, $projectVars) = PROJECT(\@rel1, \@vars1, $cutVars);
     PRINT_OUT($project, $projectVars);
 }
 
 if ($opts{p} eq "select") {
-    if (!defined $opts{1}){
+    if (!defined $opts{1} || !defined $opts{c}){
         print "Invalid usage, choose 1 relation for SELECT and a SELECT-condition\n";
         HELP();
         exit 1;
@@ -90,6 +90,13 @@ sub FORM_MATRIX {
     
     #transpose
     TRANSPOSE(\@relationTemp, $relation);
+}
+
+sub PARSE_PROJECT_CONDITION {
+    (my $condition) = @_;
+    $condition =~ s/\s//g;
+    my @result = split(",", $condition);
+    return \@result;
 }
 
 sub PARSE_CONDITION {
@@ -144,6 +151,16 @@ sub FIND_ROW {
     return -1;
 }
 
+sub FIND_ROWS {
+    (my $vars, my $lookupArr) = @_;
+    my @result;
+    foreach $var (@$lookupArr) {
+        my $num = FIND_ROW($vars, $var);
+        push(@result, $num);
+    }
+    return \@result;
+}
+
 # condition is a string like "var=2"
 sub SELECT {
     (my $relation, my $vars, my $condition) = @_;
@@ -159,18 +176,18 @@ sub SELECT {
     return \@result;
 }
 
-# projection: remove $cutVar from the relation
+# projection: remove cutVars from the relation
 sub PROJECT {
-    (my $relation, my $vars, my $cutVar) = @_;
+    (my $relation, my $vars, my $cutVars) = @_;
     my @result;
     my @resVars;
-    my $varNum = FIND_ROW($vars, $cutVar);
+    my $varNums = FIND_ROWS($vars, $cutVars);
 
     foreach $row (@$relation) {
         my $i = 0;
         my @newRow;
         foreach $value (@$row) {
-            if ($i != $varNum) {
+            if ( not (member($i, @$varNums) + 1) ) {
                 push(@newRow, $value);
             }
             $i++;
@@ -178,7 +195,7 @@ sub PROJECT {
         push(@result, \@newRow);
     }
     foreach $var (@$vars) {
-        if ($var ne $cutVar) {
+        if ( not (member($var, @$cutVars) + 1) ) {
             push(@resVars, $var);
         }
     }
