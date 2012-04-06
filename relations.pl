@@ -102,7 +102,7 @@ sub PARSE_CONDITION {
 
 sub CONDITIONAL_JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2, my $condition) = @_;
-    (my $condVar, my $value) = PARSE_CONDITION($condition);
+    (my $condVar, my $value) = split("=", $condition);
     #select all $condVar = $value from relation
     (my $newRel1) = SELECT($rel1, $vars1, $condition);
     (my $cutNewRel1, my $newVars1) = PROJECT($newRel1, $vars1, $condVar);
@@ -148,7 +148,7 @@ sub FIND_ROW {
 sub SELECT {
     (my $relation, my $vars, my $condition) = @_;
     my @result;
-    (my $var, my $val) = PARSE_CONDITION($condition);
+    (my $var, my $val) = split("=", $condition);
     my $varNum = FIND_ROW($vars, $var);
     
     foreach $row (@$relation) {
