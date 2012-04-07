@@ -44,17 +44,31 @@ if ($opts{p} eq "cartesian") {
     PRINT_OUT($cartesian, $cartesianVars);
 }
 
+if ($opts{p} eq "remove") {
+    if (!defined $opts{1} || !defined $opts{c}){
+        print "Invalid usage, choose 1 relation for REMOVE and a REMOVE-condition\n";
+        HELP();
+        exit 1;
+    }
+    my @rel1, @vars1;
+    my $remove, $removeVars;
+    FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
+    my $cutVars = PARSE_REMOVE_CONDITION($opts{c});
+    ($remove, $removeVars) = REMOVE(\@rel1, \@vars1, $cutVars);
+    PRINT_OUT($remove, $removeVars);
+}
+
 if ($opts{p} eq "project") {
     if (!defined $opts{1} || !defined $opts{c}){
-        print "Invalid usage, choose 1 relation for PROJECT and a PROJECT-condition\n";
+        print "Invalid usage, choose 1 relation for REMOVE and a REMOVE-condition\n";
         HELP();
         exit 1;
     }
     my @rel1, @vars1;
     my $project, $projectVars;
     FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
-    my $cutVars = PARSE_PROJECT_CONDITION($opts{c});
-    ($project, $projectVars) = PROJECT(\@rel1, \@vars1, $cutVars);
+    my $keepVars = PARSE_REMOVE_CONDITION($opts{c});
+    ($project, $projectVars) = PROJECT(\@rel1, \@vars1, $keepVars);
     PRINT_OUT($project, $projectVars);
 }
 
@@ -72,6 +86,11 @@ if ($opts{p} eq "select") {
     PRINT_OUT($select, \@vars1);
 }
 
+else {
+    print "Invalid usage!\n";
+    HELP();
+    exit 1;
+}
 
 sub FORM_MATRIX {
     (my $relation, my $vars, my $filename) = @_;
@@ -92,7 +111,7 @@ sub FORM_MATRIX {
     TRANSPOSE(\@relationTemp, $relation);
 }
 
-sub PARSE_PROJECT_CONDITION {
+sub PARSE_REMOVE_CONDITION {
     (my $condition) = @_;
     $condition =~ s/\s//g;
     my @result = split(",", $condition);
@@ -112,7 +131,7 @@ sub CONDITIONAL_JOIN {
     (my $condVar, my $value) = split("=", $condition);
     #select all $condVar = $value from relation
     (my $newRel1) = SELECT($rel1, $vars1, $condition);
-    (my $cutNewRel1, my $newVars1) = PROJECT($newRel1, $vars1, $condVar);
+    (my $cutNewRel1, my $newVars1) = REMOVE($newRel1, $vars1, $condVar);
     (my $newRel2) = SELECT($rel2, $vars2, $condition);
     print Dumper($newRel2);
     (my $relation, my $vars) = CARTESIAN($cutNewRel1, $newRel2, $newVars1, $vars2);
@@ -120,8 +139,8 @@ sub CONDITIONAL_JOIN {
     return ($relation, $vars); 
 }
 
-#TO DO: support other domains (now D=[0,1] only is supported)
-#condVar is a string like "k"
+# TO DO: support other domains (now D=[0,1] only is supported)
+# condVar is a string like "k"
 sub JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2, my $condVar) = @_;
     my @joinRelation, @joinVars;
@@ -138,24 +157,11 @@ sub JOIN {
 
 }
 
-#lookup is a string like "k"
-sub FIND_ROW {
-    (my $vars, my $lookup) = @_;
-    my $i = 0;
-    foreach $var (@$vars) {
-        if ($var eq $lookup) {
-            return $i;
-        }
-        $i++;
-    }
-    return -1;
-}
-
 sub FIND_ROWS {
     (my $vars, my $lookupArr) = @_;
     my @result;
     foreach $var (@$lookupArr) {
-        my $num = FIND_ROW($vars, $var);
+        my $num = member($var, @$vars);
         push(@result, $num);
     }
     return \@result;
@@ -166,7 +172,7 @@ sub SELECT {
     (my $relation, my $vars, my $condition) = @_;
     my @result;
     (my $var, my $val) = split("=", $condition);
-    my $varNum = FIND_ROW($vars, $var);
+    my $varNum = member($var, @$vars);
     
     foreach $row (@$relation) {
         if ($row->[$varNum] == $val) {
@@ -176,8 +182,29 @@ sub SELECT {
     return \@result;
 }
 
-# projection: remove cutVars from the relation
+# projects the relation over projectVars
 sub PROJECT {
+    (my $relation, my $vars, my $projectVars) = @_;
+    my @result;
+    my @resVars;
+    my $varNums = FIND_ROWS($vars, $projectVars);
+
+    foreach $row (@$relation) {
+        my $i = 0;
+        my @newRow;
+        foreach $value (@$row) {
+            if ( member($i, @$varNums) + 1 ) {
+                push(@newRow, $value);
+            }
+            $i++;
+        }
+        push(@result, \@newRow);
+    }
+    return (\@result, $projectVars);
+}
+
+# like projection, but removes cutVars from the relation
+sub REMOVE {
     (my $relation, my $vars, my $cutVars) = @_;
     my @result;
     my @resVars;
@@ -199,7 +226,6 @@ sub PROJECT {
             push(@resVars, $var);
         }
     }
-    print 
     return (\@result, \@resVars);
 }
 
