@@ -171,9 +171,9 @@ sub JOIN {
     %cond1 = ($condVar => 1);
 
     #select all $condVar = 0 from rel1
-    (my $relation_0, my $vars_0) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, %$cond0);
+    (my $relation_0, my $vars_0) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, \%cond0);
     #select all $condVar = 1 from rel1
-    (my $relation_1, my $vars_1) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, %$cond1);
+    (my $relation_1, my $vars_1) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, \%cond1);
 
     @joinRelation = (@$relation_0, @$relation_1);
 
