@@ -20,16 +20,21 @@ if ($opts{p} eq "join") {
     my $join, $joinVars;
     FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
     FORM_MATRIX(\@rel2, \@vars2 ,$opts{2});
-    (my $var, my $value) = PARSE_CONDITION($opts{c});
-    if (!defined $value) {
-        ($join, $joinVars) = JOIN(\@rel1, \@rel2, \@vars1, \@vars2, $var);
+    my $conditions = PARSE_CONDITION($opts{c});
+    my @condVars = keys %$conditions;
+    my $firstVar = @condVars[0];
+    if ($conditions->{$firstVar} == undef) {
+        #unconditional join works only for one variable
+        ($join, $joinVars) = JOIN(\@rel1, \@rel2, \@vars1, \@vars2, $firstVar);
     }
     else {
-        ($join, $joinVars) = JOIN(\@rel1, \@rel2, \@vars1, \@vars2, "$var=$value");
+        ($join, $joinVars) = CONDITIONAL_JOIN(\@rel1, \@rel2, \@vars1, \@vars2, $conditions);
     }
     PRINT_OUT($join, $joinVars);
+    exit 0;
 }
 
+#ok
 if ($opts{p} eq "cartesian") {
     if (!defined $opts{1} || !defined $opts{2}){
         print "Invalid usage, choose 2 relations for CARTESIAN\n";
@@ -42,8 +47,10 @@ if ($opts{p} eq "cartesian") {
     FORM_MATRIX(\@rel2, \@vars2 ,$opts{2});
     ($cartesian, $cartesianVars) = CARTESIAN(\@rel1, \@rel2, \@vars1, \@vars2);
     PRINT_OUT($cartesian, $cartesianVars);
+    exit 0;
 }
 
+#ok
 if ($opts{p} eq "remove") {
     if (!defined $opts{1} || !defined $opts{c}){
         print "Invalid usage, choose 1 relation for REMOVE and a REMOVE-condition\n";
@@ -56,8 +63,10 @@ if ($opts{p} eq "remove") {
     my $cutVars = PARSE_REMOVE_CONDITION($opts{c});
     ($remove, $removeVars) = REMOVE(\@rel1, \@vars1, $cutVars);
     PRINT_OUT($remove, $removeVars);
+    exit 0;
 }
 
+#ok
 if ($opts{p} eq "project") {
     if (!defined $opts{1} || !defined $opts{c}){
         print "Invalid usage, choose 1 relation for REMOVE and a REMOVE-condition\n";
@@ -70,8 +79,10 @@ if ($opts{p} eq "project") {
     my $keepVars = PARSE_REMOVE_CONDITION($opts{c});
     ($project, $projectVars) = PROJECT(\@rel1, \@vars1, $keepVars);
     PRINT_OUT($project, $projectVars);
+    exit 0;
 }
 
+#ok
 if ($opts{p} eq "select") {
     if (!defined $opts{1} || !defined $opts{c}){
         print "Invalid usage, choose 1 relation for SELECT and a SELECT-condition\n";
@@ -81,9 +92,9 @@ if ($opts{p} eq "select") {
     my @rel1, @vars1;
     my $select, $selectVars;
     FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
-    (my $var, my $value) = PARSE_CONDITION($opts{c});
-    $select = SELECT(\@rel1, \@vars1, "$var=$value");
+    $select = SELECT(\@rel1, \@vars1, PARSE_CONDITION($opts{c}));
     PRINT_OUT($select, \@vars1);
+    exit 0;
 }
 
 else {
@@ -118,24 +129,36 @@ sub PARSE_REMOVE_CONDITION {
     return \@result;
 }
 
+#return hash: keys - vars, values - condition values
 sub PARSE_CONDITION {
     (my $condition) = @_;
+    my %result;
     $condition =~ s/\s//g;
-    (my $var, my $value) = split("=", $condition);
-    return ($var, $value);
+    my @matches = split(",", $condition);
+    foreach my $match(@matches) {
+        (my $var, my $value) = split("=", $match);
+        $result{$var} = $value;
+    }
+    return \%result;
 }
 
 
+# condition is a hash{var}=value
 sub CONDITIONAL_JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2, my $condition) = @_;
-    (my $condVar, my $value) = split("=", $condition);
     #select all $condVar = $value from relation
     (my $newRel1) = SELECT($rel1, $vars1, $condition);
-    (my $cutNewRel1, my $newVars1) = REMOVE($newRel1, $vars1, $condVar);
+
+    #remove vars that are present in both relations from relation1
+    my @removeVars;
+    foreach my $key(keys %$condition){
+        if ((member($key, @$vars1) + 1) and (member($key, @$vars2) + 1)) {
+            push(@removeVars, $key);
+        }
+    }
+    (my $cutNewRel1, my $newVars1) = REMOVE($newRel1, $vars1, \@removeVars);
     (my $newRel2) = SELECT($rel2, $vars2, $condition);
-    print Dumper($newRel2);
     (my $relation, my $vars) = CARTESIAN($cutNewRel1, $newRel2, $newVars1, $vars2);
-    print Dumper($vars);
     return ($relation, $vars); 
 }
 
@@ -144,12 +167,13 @@ sub CONDITIONAL_JOIN {
 sub JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2, my $condVar) = @_;
     my @joinRelation, @joinVars;
+    %cond0 = ($condVar => 0);
+    %cond1 = ($condVar => 1);
 
     #select all $condVar = 0 from rel1
-    (my $relation_0, my $vars_0) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, "$condVar=0");
-
+    (my $relation_0, my $vars_0) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, %$cond0);
     #select all $condVar = 1 from rel1
-    (my $relation_1, my $vars_1) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, "$condVar=1");
+    (my $relation_1, my $vars_1) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, %$cond1);
 
     @joinRelation = (@$relation_0, @$relation_1);
 
@@ -167,15 +191,30 @@ sub FIND_ROWS {
     return \@result;
 }
 
-# condition is a string like "var=2"
+# condition is a hash{var}=value
 sub SELECT {
     (my $relation, my $vars, my $condition) = @_;
     my @result;
-    (my $var, my $val) = split("=", $condition);
-    my $varNum = member($var, @$vars);
-    
+    #build varNums hash, if any variable doesn't exist -> return null
+    my %varNums;
+    foreach my $var(keys %$condition) {
+        $res = member($var, @$vars);
+        if ($res == -1)
+        {
+            return [];
+        }
+        $varNums{$var} = $res;
+    }
+
     foreach $row (@$relation) {
-        if ($row->[$varNum] == $val) {
+        my $addRow = 1;
+        foreach my $var(keys %varNums) {
+            last if ($addRow == 0);
+            if (!($row->[$varNums{$var}] == $condition->{$var})) {
+                $addRow = 0; 
+            }
+        }
+        if ($addRow) {
             push(@result, $row);
         }
     }
