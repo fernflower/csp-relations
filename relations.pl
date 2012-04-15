@@ -20,12 +20,14 @@ if ($opts{p} eq "join") {
     my $join, $joinVars;
     FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
     FORM_MATRIX(\@rel2, \@vars2 ,$opts{2});
+
+    GET_UNIQUE(\@rel1, \@vars1, \@vars1);
+
     my $conditions = PARSE_CONDITION($opts{c});
     my @condVars = keys %$conditions;
     my $firstVar = @condVars[0];
-    if ($conditions->{$firstVar} == undef) {
-        #unconditional join works only for one variable
-        ($join, $joinVars) = JOIN(\@rel1, \@rel2, \@vars1, \@vars2, $firstVar);
+    if (!defined($conditions->{$firstVar})) {
+        ($join, $joinVars) = JOIN(\@rel1, \@rel2, \@vars1, \@vars2, \@condVars);
     }
     else {
         ($join, $joinVars) = CONDITIONAL_JOIN(\@rel1, \@rel2, \@vars1, \@vars2, $conditions);
@@ -92,7 +94,8 @@ if ($opts{p} eq "select") {
     my @rel1, @vars1;
     my $select, $selectVars;
     FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
-    $select = SELECT(\@rel1, \@vars1, PARSE_CONDITION($opts{c}));
+    ($select, $selectVars) = SELECT(\@rel1, \@vars1, PARSE_CONDITION($opts{c}));
+    print Dumper($selectVars);
     PRINT_OUT($select, \@vars1);
     exit 0;
 }
@@ -143,41 +146,107 @@ sub PARSE_CONDITION {
 }
 
 
+
+sub EQUAL {
+    (my $row1, my $row2, my $varNums) = @_; 
+    my $duplicate = 1;
+    foreach my $varNum(@$varNums) {
+        if ($row1->[$varNum] != $row2->[$varNum]){
+            return 0;
+        }
+    }
+    if ($duplicate) {
+        return 1;
+    }
+}
+
+sub IS_UNIQUE {
+    (my $row, my $rows, my $vars, my $joinVars) = @_;
+    my $varNums = FIND_ROWS($vars, $joinVars);
+    #if @rows is empty, add row
+    if (@$rows == undef) {
+        return 1;
+    }
+    foreach my $stored_row (@$rows){
+        #print EQUAL($row, $stored_row, $varNums);
+        if (EQUAL($row, $stored_row, $varNums)){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+sub GET_UNIQUE {
+    (my $relation, my $vars, my $joinVars) = @_;
+    my @result;
+    foreach my $row(@$relation){
+        if (IS_UNIQUE($row, \@result, $vars, $joinVars)){
+            push(@result, $row);
+        }
+    }
+    (my $res, my $vars) =  PROJECT(\@result, $vars, $joinVars);
+    return $res;
+}
+
+
+sub FORM_CONDITIONS {
+    (my $vars, my $values) = @_;
+    my %result;
+    for (my $i=0; $i < scalar(@$vars); $i++){
+        $result{$vars->[$i]} = $values->[$i];
+    }
+    return \%result;
+}
+
 # condition is a hash{var}=value
 sub CONDITIONAL_JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2, my $condition) = @_;
     #select all $condVar = $value from relation
-    (my $newRel1) = SELECT($rel1, $vars1, $condition);
+    (my $newRel1, my $selectVars) = SELECT($rel1, $vars1, $condition);
 
-    #remove vars that are present in both relations from relation1
+    #remove conditional vars that are present in both relations from relation1
     my @removeVars;
     foreach my $key(keys %$condition){
         if ((member($key, @$vars1) + 1) and (member($key, @$vars2) + 1)) {
             push(@removeVars, $key);
         }
     }
+    print "common vars are\n"; print Dumper(\@removeVars);
     (my $cutNewRel1, my $newVars1) = REMOVE($newRel1, $vars1, \@removeVars);
-    (my $newRel2) = SELECT($rel2, $vars2, $condition);
+    (my $newRel2, my $selectVars2) = SELECT($rel2, $vars2, $condition);
+    print "select form rel2\n"; print Dumper($selectVars2);
+    print "after remove common from rel1\n"; print Dumper($newVars1);
     (my $relation, my $vars) = CARTESIAN($cutNewRel1, $newRel2, $newVars1, $vars2);
+    print Dumper($vars);
     return ($relation, $vars); 
 }
 
+
 # TO DO: support other domains (now D=[0,1] only is supported)
-# condVar is a string like "k"
 sub JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2, my $condVar) = @_;
-    my @joinRelation, @joinVars;
+    my @joinRelation, $joinVarsRef;
     %cond0 = ($condVar => 0);
     %cond1 = ($condVar => 1);
 
+
+    my $unique_rel1 = GET_UNIQUE($rel1, $vars1, $condVar);
+    #print Dumper($unique_rel1);
+    foreach my $tuple (@$unique_rel1){
+        my $newConditions = FORM_CONDITIONS($condVar, $tuple);
+        #print Dumper($newConditions);
+        (my $relation_0, $joinVarsRef) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, $newConditions);
+        @joinRelation = (@joinRelation, @$relation_0);
+    }
     #select all $condVar = 0 from rel1
-    (my $relation_0, my $vars_0) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, \%cond0);
+    #(my $relation_0, my $vars_0) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, \%cond0);
     #select all $condVar = 1 from rel1
-    (my $relation_1, my $vars_1) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, \%cond1);
+    #(my $relation_1, my $vars_1) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, \%cond1);
 
-    @joinRelation = (@$relation_0, @$relation_1);
-
-    return (\@joinRelation, $vars_0);
+    #@joinRelation = (@$relation_0, @$relation_1);
+    print Dumper(\@joinRelation);
+    return (\@joinRelation, $joinVarsRef);
 
 }
 
@@ -191,7 +260,8 @@ sub FIND_ROWS {
     return \@result;
 }
 
-# condition is a hash{var}=value
+# condition is a hash{var}=value, returns selectVars - conditional variables that have been actually found
+# for example: condition is "x=0,y=1,z=0,k=1", relVars are (x,y,z,l) => no k variable is found, returns (x,y,z)
 sub SELECT {
     (my $relation, my $vars, my $condition) = @_;
     my @result;
@@ -199,12 +269,12 @@ sub SELECT {
     my %varNums;
     foreach my $var(keys %$condition) {
         $res = member($var, @$vars);
-        if ($res == -1)
+        if ($res != -1)
         {
-            return [];
+            $varNums{$var} = $res;
         }
-        $varNums{$var} = $res;
     }
+    my @selectVars = keys %varNums;
 
     foreach $row (@$relation) {
         my $addRow = 1;
@@ -218,7 +288,7 @@ sub SELECT {
             push(@result, $row);
         }
     }
-    return \@result;
+    return (\@result, \@selectVars);
 }
 
 # projects the relation over projectVars
@@ -349,5 +419,4 @@ sub FORM_HASH {
         $hashref->{$var} = \@rel;
     }
     close REL;
-    print Dumper($hashref);
 }
