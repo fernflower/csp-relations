@@ -10,7 +10,7 @@ $opts{o}||= "out";
 $opts{p}||= "join";
 
 if ($opts{p} eq "join") {
-    if (!defined $opts{1} || !defined $opts{2} || !defined $opts{c}){
+    if (!defined $opts{1} || !defined $opts{2}){
         print "Invalid usage, choose 2 relations for JOIN and a JOIN-condition\n";
         HELP();
         exit 1;
@@ -21,11 +21,18 @@ if ($opts{p} eq "join") {
     FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
     FORM_MATRIX(\@rel2, \@vars2 ,$opts{2});
 
-    GET_UNIQUE(\@rel1, \@vars1, \@vars1);
+    #join on common variables if no condition defined
+    if (!defined($opts{c})){
+        ($join, $joinVars) = SMART_JOIN(\@rel1, \@rel2, \@vars1, \@vars2);
+        PRINT_OUT($join, $joinVars);
+        exit 0;
+    }
 
+    #else parse conditions
     my $conditions = PARSE_CONDITION($opts{c});
     my @condVars = keys %$conditions;
     my $firstVar = @condVars[0];
+
     if (!defined($conditions->{$firstVar})) {
         ($join, $joinVars) = JOIN(\@rel1, \@rel2, \@vars1, \@vars2, \@condVars);
     }
@@ -212,13 +219,10 @@ sub CONDITIONAL_JOIN {
             push(@removeVars, $key);
         }
     }
-    print "common vars are\n"; print Dumper(\@removeVars);
+    
     (my $cutNewRel1, my $newVars1) = REMOVE($newRel1, $vars1, \@removeVars);
     (my $newRel2, my $selectVars2) = SELECT($rel2, $vars2, $condition);
-    print "select form rel2\n"; print Dumper($selectVars2);
-    print "after remove common from rel1\n"; print Dumper($newVars1);
     (my $relation, my $vars) = CARTESIAN($cutNewRel1, $newRel2, $newVars1, $vars2);
-    print Dumper($vars);
     return ($relation, $vars); 
 }
 
@@ -230,24 +234,32 @@ sub JOIN {
     %cond0 = ($condVar => 0);
     %cond1 = ($condVar => 1);
 
-
     my $unique_rel1 = GET_UNIQUE($rel1, $vars1, $condVar);
-    #print Dumper($unique_rel1);
     foreach my $tuple (@$unique_rel1){
         my $newConditions = FORM_CONDITIONS($condVar, $tuple);
-        #print Dumper($newConditions);
         (my $relation_0, $joinVarsRef) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, $newConditions);
         @joinRelation = (@joinRelation, @$relation_0);
     }
-    #select all $condVar = 0 from rel1
-    #(my $relation_0, my $vars_0) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, \%cond0);
-    #select all $condVar = 1 from rel1
-    #(my $relation_1, my $vars_1) = CONDITIONAL_JOIN($rel1, $rel2, $vars1, $vars2, \%cond1);
-
-    #@joinRelation = (@$relation_0, @$relation_1);
-    print Dumper(\@joinRelation);
     return (\@joinRelation, $joinVarsRef);
+}
 
+#join two relations on common vars
+sub SMART_JOIN {
+    (my $rel1, my $rel2, my $vars1, my $vars2) = @_;
+    my $commonVars = GET_COMMON_VARS($vars1, $vars2);
+    return JOIN($rel1, $rel2, $vars1, $vars2, $commonVars);
+}
+
+sub GET_COMMON_VARS {
+    (my $vars1, my $vars2) = @_;
+    my @commonVars;
+    foreach my $var(@$vars1){
+        if ((member($var, @$vars2) + 1)) {
+            push(@commonVars, $var);
+        }
+    }
+    print Dumper(\@commonVars);
+    return \@commonVars;
 }
 
 sub FIND_ROWS {
