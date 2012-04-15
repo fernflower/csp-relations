@@ -258,7 +258,6 @@ sub GET_COMMON_VARS {
             push(@commonVars, $var);
         }
     }
-    print Dumper(\@commonVars);
     return \@commonVars;
 }
 
