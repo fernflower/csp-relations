@@ -10,6 +10,20 @@ $opts{o}||= "out";
 $opts{p}||= "join";
 
 
+if ($opts{p} eq "rename") {
+    if (!defined $opts{1} || !defined $opts{c}){
+        print "Invalid usage, choose 1 relation for RENAME and a set of variables as a condition\n";
+        HELP();
+        exit 1;
+    }
+    my @rel1, @vars1;
+    FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
+    my $condVars = PARSE_CONDITION($opts{c});
+    my $renamedVars = RENAME(\@vars1, $condVars);
+    PRINT_OUT(\@rel1, $renamedVars);
+    exit 0;
+}
+
 if ($opts{p} eq "negate") {
     if (!defined $opts{1} || !defined $opts{c}){
         print "Invalid usage, choose 1 relation for NEGATE and a set of variables as a condition\n";
@@ -394,6 +408,19 @@ sub CARTESIAN {
     return (\@result, \@resvars);
 }
 
+sub RENAME {
+   (my $vars, my $condition) = @_;
+    #my $varNums = FIND_ROWS($vars, keys %$condition);
+    my @result = @$vars;
+    foreach my $var (keys %$condition){
+        $varNum = member($var, @$vars);
+        if ($varNum + 1){
+            @result[$varNum] = $condition->{$var};
+        }
+    }
+    return \@result;
+}
+
 #pretty print to file
 sub PRINT_OUT {
     (my $relation, my $vars) = @_;
@@ -425,6 +452,7 @@ sub TRANSPOSE {
         }
     }
 }
+
 
 #print usage info
 sub HELP {
