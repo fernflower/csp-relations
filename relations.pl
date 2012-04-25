@@ -231,8 +231,8 @@ sub CONDITIONAL_JOIN {
 sub JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2, my $condVar) = @_;
     my @joinRelation, $joinVarsRef;
-    %cond0 = ($condVar => 0);
-    %cond1 = ($condVar => 1);
+    #%cond0 = ($condVar => 0);
+    #%cond1 = ($condVar => 1);
 
     my $unique_rel1 = GET_UNIQUE($rel1, $vars1, $condVar);
     foreach my $tuple (@$unique_rel1){
