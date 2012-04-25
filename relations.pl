@@ -9,6 +9,22 @@ getopts(':1:2:o:c:p:', \%opts);
 $opts{o}||= "out";
 $opts{p}||= "join";
 
+
+if ($opts{p} eq "negate") {
+    if (!defined $opts{1} || !defined $opts{c}){
+        print "Invalid usage, choose 1 relation for NEGATE and a set of variables as a condition\n";
+        HELP();
+        exit 1;
+    }
+    my @rel1, @vars1;
+    my $negate, $negateVars;
+    FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
+    my $cutVars = PARSE_REMOVE_CONDITION($opts{c});
+    ($negate, $negateVars) = NEGATE(\@rel1, \@vars1, $cutVars);
+    PRINT_OUT($negate, \@vars1);
+    exit 0;
+}
+
 if ($opts{p} eq "join") {
     if (!defined $opts{1} || !defined $opts{2}){
         print "Invalid usage, choose 2 relations for JOIN and a JOIN-condition\n";
@@ -23,7 +39,7 @@ if ($opts{p} eq "join") {
 
     #join on common variables if no condition defined
     if (!defined($opts{c})){
-        ($join, $joinVars) = SMART_JOIN(\@rel1, \@rel2, \@vars1, \@vars2);
+        ($join, $joinVars) = NATURAL_JOIN(\@rel1, \@rel2, \@vars1, \@vars2);
         PRINT_OUT($join, $joinVars);
         exit 0;
     }
@@ -153,6 +169,18 @@ sub PARSE_CONDITION {
 }
 
 
+sub NEGATE {
+    (my $relation, my $vars, my $negVars) = @_;
+    my @result = @$relation;
+    my $negVarNums = FIND_ROWS($vars, $negVars);
+    foreach my $tuple (@result){
+        foreach my $num (@$negVarNums){
+            $tuple->[$num] = ($tuple->[$num] + 1) % 2;
+        }
+    }
+    return \@result;
+}
+
 
 sub EQUAL {
     (my $row1, my $row2, my $varNums) = @_; 
@@ -244,7 +272,7 @@ sub JOIN {
 }
 
 #join two relations on common vars
-sub SMART_JOIN {
+sub NATURAL_JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2) = @_;
     my $commonVars = GET_COMMON_VARS($vars1, $vars2);
     return JOIN($rel1, $rel2, $vars1, $vars2, $commonVars);
@@ -266,7 +294,9 @@ sub FIND_ROWS {
     my @result;
     foreach $var (@$lookupArr) {
         my $num = member($var, @$vars);
-        push(@result, $num);
+        if ($num != -1){
+            push(@result, $num);
+        }
     }
     return \@result;
 }
@@ -406,8 +436,8 @@ sub HELP {
     -1 - first relation's table
     -2 - second relations's table
     -o - output
-    -p - perform operation: "join", "project", "cartesian", "select" ("join" by default)
-    -c - condition ("x", "x=1")
+    -p - perform operation: "join", "project", "cartesian", "select", "negate" ("join" by default)
+    -c - condition ("x, y, z", "x=1, k=0")
 
     Typical relation table format: 
     x; 0 0 1 1
