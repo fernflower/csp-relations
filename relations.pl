@@ -340,13 +340,10 @@ sub PROJECT {
     my $varNums = FIND_ROWS($vars, $projectVars);
 
     foreach $row (@$relation) {
-        my $i = 0;
         my @newRow;
-        foreach $value (@$row) {
-            if ( member($i, @$varNums) + 1 ) {
-                push(@newRow, $value);
-            }
-            $i++;
+        foreach $num (@$varNums) {
+            push(@newRow, $row->[$num]);
+            
         }
         push(@result, \@newRow);
     }
