@@ -66,6 +66,10 @@ if ($opts{p} eq "join") {
     if (!defined($conditions->{$firstVar})) {
         ($join, $joinVars) = JOIN(\@rel1, \@rel2, \@vars1, \@vars2, \@condVars);
     }
+    elsif (CHECK_FOR_VARIABLE($conditions->{$firstVar})){
+        print "variable";
+        ($join, $joinVars) = JOIN_WITH_RENAME(\@rel1, \@rel2, \@vars1, \@vars2, $conditions);
+    }
     else {
         ($join, $joinVars) = CONDITIONAL_JOIN(\@rel1, \@rel2, \@vars1, \@vars2, $conditions);
     }
@@ -182,6 +186,20 @@ sub PARSE_CONDITION {
     return \%result;
 }
 
+sub CHECK_FOR_VARIABLE {
+    (my $symbol) = @_;
+    if ($symbol =~ /([a-zA-Z]+)([0-9]*)/){
+        return 1;
+    }
+    return 0;
+}
+
+#natural join with rename, renaming variables from the first relation
+sub JOIN_WITH_RENAME {
+    (my $rel1, my $rel2, my $vars1, my $vars2, my $condVars) = @_;
+    my $renamedVars = RENAME($vars1, $condVars);
+    return NATURAL_JOIN($rel1, $rel2, $renamedVars, $vars2);
+}
 
 sub NEGATE {
     (my $relation, my $vars, my $negVars) = @_;
