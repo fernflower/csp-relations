@@ -135,7 +135,6 @@ if ($opts{p} eq "select") {
     my $select, $selectVars;
     FORM_MATRIX(\@rel1, \@vars1 ,$opts{1});
     ($select, $selectVars) = SELECT(\@rel1, \@vars1, PARSE_CONDITION($opts{c}));
-    print Dumper($selectVars);
     PRINT_OUT($select, \@vars1);
     exit 0;
 }
@@ -234,7 +233,6 @@ sub IS_UNIQUE {
         return 1;
     }
     foreach my $stored_row (@$rows){
-        #print EQUAL($row, $stored_row, $varNums);
         if (EQUAL($row, $stored_row, $varNums)){
             return 0;
         }
@@ -305,9 +303,7 @@ sub JOIN {
 sub NATURAL_JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2) = @_;
     my $commonVars = GET_COMMON_VARS($vars1, $vars2);
-    print Dumper($commonVars);
     if (@$commonVars == undef){
-        print "no common vars\n";
         return CARTESIAN($rel1, $rel2, $vars1, $vars2);
     }
     return JOIN($rel1, $rel2, $vars1, $vars2, $commonVars);
@@ -339,13 +335,20 @@ sub FIND_ROWS {
 
 # condition is a hash{var}=value, returns selectVars - conditional variables that have been actually found
 # for example: condition is "x=0,y=1,z=0,k=1", relVars are (x,y,z,l) => no k variable is found, returns (x,y,z)
+
 sub SELECT {
     (my $relation, my $vars, my $condition) = @_;
-    my @result;
-    #build varNums hash, if any variable doesn't exist -> return null
+    my @result, $res;
+    #build varNums hash
     my %varNums;
     foreach my $var(keys %$condition) {
-        $res = member($var, @$vars);
+        my $comparisonVar = $condition->{$var};
+        if (CHECK_FOR_VARIABLE($comparisonVar)) {
+            $res = member($comparisonVar, @$vars);  
+        }
+        else {
+            $res = member($var, @$vars);
+        }
         if ($res != -1)
         {
             $varNums{$var} = $res;
@@ -357,7 +360,16 @@ sub SELECT {
         my $addRow = 1;
         foreach my $var(keys %varNums) {
             last if ($addRow == 0);
-            if (!($row->[$varNums{$var}] == $condition->{$var})) {
+            #if select condition is like x=y
+            if (CHECK_FOR_VARIABLE($condition->{$var})){
+                my $varNum1 = $varNums{$var};
+                my $varNum2 = $varNums{$condition->{$var}};
+                if ($row->[$varNum1] != $row->[$varNum2]){
+                    $addRow = 0;
+                }
+            }
+            #if select condition is like x=0
+            elsif (!($row->[$varNums{$var}] == $condition->{$var})) {
                 $addRow = 0; 
             }
         }
