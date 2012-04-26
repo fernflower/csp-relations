@@ -67,7 +67,6 @@ if ($opts{p} eq "join") {
         ($join, $joinVars) = JOIN(\@rel1, \@rel2, \@vars1, \@vars2, \@condVars);
     }
     elsif (CHECK_FOR_VARIABLE($conditions->{$firstVar})){
-        print "variable";
         ($join, $joinVars) = JOIN_WITH_RENAME(\@rel1, \@rel2, \@vars1, \@vars2, $conditions);
     }
     else {
@@ -150,7 +149,7 @@ else {
 sub FORM_MATRIX {
     (my $relation, my $vars, my $filename) = @_;
     #read from file
-    open(REL, $filename || die "Could not open file!");
+    open(REL, "<", $filename) or die "Could not open file $filename!";
     @rel_data = <REL>;
     my @relationTemp;
     my $line;
@@ -291,8 +290,6 @@ sub CONDITIONAL_JOIN {
 sub JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2, my $condVar) = @_;
     my @joinRelation, $joinVarsRef;
-    #%cond0 = ($condVar => 0);
-    #%cond1 = ($condVar => 1);
 
     my $unique_rel1 = GET_UNIQUE($rel1, $vars1, $condVar);
     foreach my $tuple (@$unique_rel1){
@@ -303,13 +300,20 @@ sub JOIN {
     return (\@joinRelation, $joinVarsRef);
 }
 
-#join two relations on common vars
+#join two relations on common vars; 
+#if no common vars are found => return cartesian product of two relations
 sub NATURAL_JOIN {
     (my $rel1, my $rel2, my $vars1, my $vars2) = @_;
     my $commonVars = GET_COMMON_VARS($vars1, $vars2);
+    print Dumper($commonVars);
+    if (@$commonVars == undef){
+        print "no common vars\n";
+        return CARTESIAN($rel1, $rel2, $vars1, $vars2);
+    }
     return JOIN($rel1, $rel2, $vars1, $vars2, $commonVars);
 }
 
+#returns array of common vars for two relations
 sub GET_COMMON_VARS {
     (my $vars1, my $vars2) = @_;
     my @commonVars;
@@ -442,7 +446,7 @@ sub RENAME {
 #pretty print to file
 sub PRINT_OUT {
     (my $relation, my $vars) = @_;
-    open(OUT, ">", $opts{o}) or die "FAILED to open file for writing!";
+    open(OUT, ">", $opts{o}) or die "FAILED to open file $opts{o} for writing!";
     
     #transpose relation (each tuple should be one line)
     my @transposed;
@@ -490,17 +494,3 @@ EOHELP
     ;
 }
 
-#load relation from file into a Vhash
-sub FORM_HASH {
-    (my $hashref, my $filename) = @_;
-
-    open(REL, $filename || die "Could not open file!");
-    @rel_data = <REL>;
-    my $line;
-    foreach $line (@rel_data)  {
-        (my $var, my $relation) = split(";", $line);
-        my @rel = ($relation =~ /(\d)/g);
-        $hashref->{$var} = \@rel;
-    }
-    close REL;
-}
