@@ -1,0 +1,11 @@
+#!/bin/sh
+#constant
+perl relations.pl -1 test1 -p select -c "x=y" -o constant
+perl relations.pl -1 constant -p project -c "x,z" -o constant
+perl relations.pl -1 constant -2 test1 -c "x=z, z=p" -o result_not
+perl relations.pl -1 result_not -p project -c "x,y" -o result_not
+ 
+
+
+#clean everything
+rm -f join neg* proj*
