@@ -1,11 +1,11 @@
-\documentclass[14pt,fleqn,russian]{extarticle}
+\documentclass[12pt]{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage[russian]{babel}
+\usepackage[english,russian]{babel}
 \usepackage[pdftex,unicode]{hyperref}
 \usepackage[margin=15mm,left=2cm]{geometry}
-\usepackage{hyperref}
 \usepackage{indentfirst}
+\usepackage{amsbib}
 
 \sloppy
 \clubpenalty=999
@@ -65,9 +65,25 @@
 
 \setcounter{page}{2}
 
-\begin{thebibliography}{99}
+\section{Введение}
+В ряде работ \cite{Shu09}.
 
-\end{thebibliography}
-
+% Список цитируемой литературы
+\clearpage
+\addcontentsline{toc}{section}{Список цитируемой литературы}
+\thebibliography{99}
+\RBibitem{Shu09}
+    \by М.~С.~Шуплецов
+    \paper Оценки высокой степени точности для сложности предикатных схем в~некоторых базисах
+    \inbook Физико-математические науки
+    \serial Уч\"eн. зап. Казан. гос. ун-та. Сер. Физ.-матем. науки
+    \yr 2009
+    \vol 151
+    \issue 2
+    \pages 173--184
+    \publ Изд-во Казанского ун-та
+    \publaddr Казань
+    \mathnet{http://mi.mathnet.ru/uzku760}
+\endthebibliography
 
 \end{document}
