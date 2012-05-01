@@ -1,0 +1,73 @@
+\documentclass[14pt,fleqn,russian]{extarticle}
+
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[pdftex,unicode]{hyperref}
+\usepackage[margin=15mm,left=2cm]{geometry}
+\usepackage{hyperref}
+\usepackage{indentfirst}
+
+\sloppy
+\clubpenalty=999
+\widowpenalty=9999
+
+% This is all for formatting and making the Table of Contents according to 
+% spec. Don't play with it.
+\makeatletter
+\renewcommand\l@section[2]{%
+    \ifnum \c@tocdepth >\z@
+        \addpenalty\@secpenalty
+        \addvspace{1.0em \@plus\p@}%
+        \setlength\@tempdima{1.5em}%
+        \begingroup
+        \parindent \z@ \rightskip \@pnumwidth
+        \parfillskip -\@pnumwidth
+        \leavevmode \bfseries
+        \advance\leftskip\@tempdima
+        \hskip -\leftskip
+#1\nobreak\ 
+        \leaders\hbox{$\m@th\mkern \@dotsep mu\hbox{.}\mkern \@dotsep mu$}
+    \hfil \nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+        \endgroup
+    \fi}
+\makeatother
+
+\title{Верхние оценки параметра treewidth для класса предикатных схем}
+\author{Василевская И.\,Ю.}
+\date{\today}
+
+\begin{document}
+    \begin{titlepage}
+        \begin{center}
+            Московский Государственный Университет им. Ломоносова\\
+            Факультет Вычислительной Математики и Кибернетики\\
+            Кафедра Математической Кибернетики\\
+            магистратура, отделение <<МММ СБИС>>\\[6cm]
+
+            \large {Василевская Инесса Юрьевна}\\
+            \LARGE \textbf {Верхние оценки параметра treewidth для класса предикатных схем}\\[0.8cm]
+            \large \emph {Курсовая работа}\\[5.0cm]
+
+            \begin{flushright}
+                \large
+                \begin{minipage}{0.40\textwidth}
+                    \begin{flushleft}
+                        \emph{Научный руководитель:}\\к.ф.м.н М.\,С.~Шуплецов
+                    \end{flushleft}
+                \end{minipage}
+            \end{flushright}
+
+            \vfill
+            Москва\\
+			2012
+        \end{center}
+    \end{titlepage}
+
+\setcounter{page}{2}
+
+\begin{thebibliography}{99}
+
+\end{thebibliography}
+
+
+\end{document}
