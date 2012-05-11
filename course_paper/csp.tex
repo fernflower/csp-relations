@@ -217,7 +217,34 @@ $R_n$ ~-- заданное на $D$ отношение арности $n$. Ре�
 \textbf{Теорема}. В случае, когда ширина декомпозиции задачи CSP ограничена сверху константой, 
 решение можно найти за полиномиальное от длины входа время. (ссылку на источник!!!)
 
-\subsection{Миноры графа}
+\subsection{Forbidden graph characterization, k-outerplanar graphs}
+При нахождении верхних оценок будет использоваться классификация графов по запрещенным минорам.
+Особое внимание будет уделено классу внепланарных графов.
+
+\textbf{Определение.}
+\textit{Минором графа} $G$ называется ненаправленный граф $H$, если $H$
+является подграфом графа $G$, или может быть получен из подграфа графа $G$ 
+стягиванием ребер.
+
+\textbf{Определение.}
+A 1-outerplanar embedding of a graph is the same as an outerplanar embedding. 
+For k > 1 a planar embedding is k-outerplanar if removing the vertices on the outer
+face results in a (k - 1)-outerplanar embedding. A graph is k-outerplanar if it has a 
+k-outerplanar embedding.
+
+\textbf{Теорема (признак внепланарности графа).}
+Граф является внепланарным (2-внепланарным) $\iff$ в нем нет миноров $K_4$ и $K_{2,3}$\cite{Diestel00}.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.50\textwidth]{outerplanar.png}
+\caption{Пример 3-внепланарного графа.}
+\label{fig:outerplanar_graph}
+\end{figure}
+
+\textbf{Теорема.}
+У $k$-внепланарного графа $tw=O(k)$\cite{Baker94}.
+
 
 % Список цитируемой литературы
 \clearpage
@@ -240,13 +267,24 @@ $R_n$ ~-- заданное на $D$ отношение арности $n$. Ре�
 
 \bibitem{CSP10} Handbook of Constraint Programming, ISBN 9780444527264; 2010 г.
 
-\bibitem{Shaeffer78} Schaefer, Thomas J. (1978). "The Complexity of Satisfiability Problems". STOC 1978. pp. 216–226. doi:10.1145/800133.804350.
+\bibitem{Shaeffer78} Schaefer, Thomas J. (1978). 
+``The Complexity of Satisfiability Problems''. STOC 1978. pp. 216–226. doi:10.1145/800133.804350.
 
-\bibitem{Prosc89} Arnborg, S.; Proskurowski, A. (1989), "Linear time algorithms for NP-hard problems restricted to partial k-trees", Discrete Applied Mathematics 23 (1): 11–24, doi:10.1016/0166-218X(89)90031-0.
+\bibitem{Prosc89} Arnborg, S.; Proskurowski, A. (1989), 
+``Linear time algorithms for NP-hard problems restricted to partial k-trees'',
+Discrete Applied Mathematics 23 (1): 11–24, doi:10.1016/0166-218X(89)90031-0.
 
 \bibitem{Gott10} 
 Georg Gottlob, Reinhard Pichler, and Fang Wei. 2010. Bounded treewidth as a key to tractability of knowledge representation and reasoning. Artif. Intell. 174, 1 (January 2010), 105-132. DOI=10.1016/j.artint.2009.10.003 http://dx.doi.org/10.1016/j.artint.2009.10.003
 
+\bibitem{Diestel00}
+Diestel, Reinhard (2000), Graph Theory, Graduate Texts in Mathematics, 
+173, Springer-Verlag, ISBN 0-387-98976-5.
+
+\bibitem{Baker94}
+Baker, Brenda S. (1994), 
+``Approximation algorithms for NP-complete problems on planar graphs'', 
+Journal of the ACM 41 (1): 153–180, doi:10.1145/174644.174650
 \endthebibliography
 
 
