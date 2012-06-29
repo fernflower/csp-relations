@@ -6,3 +6,5 @@
 *out
 *.fls
 *.d
+*.temp
+../predicates/*
