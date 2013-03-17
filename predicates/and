@@ -1,0 +1,13 @@
+#!/bin/sh
+perl relations.pl -1 test1 -2 test2 -o join
+
+perl relations.pl -1 join -p negate -c "y" -o neg1
+perl relations.pl -1 neg1 -p project -c "k,y,x" -o proj1
+
+perl relations.pl -1 join -p negate -c "x" -o neg2
+perl relations.pl -1 neg2 -p project -c "x,k,y" -o proj2
+
+perl relations.pl -1 proj1 -2 proj2 -c "k=x,y=k, x=y" -o result_and
+
+#clean everything
+rm -f join neg* proj*

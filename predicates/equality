@@ -1,0 +1,9 @@
+#!/bin/sh
+#x,y,z and k,l,z on z
+perl relations.pl -1 test1 -2 test2 -o join1
+perl relations.pl -1 join1 -2 test3 -o join2
+
+perl relations.pl -1 join2 -p project -c "m,x,l" -o result_equality
+
+#clean everything
+rm -f join* 
