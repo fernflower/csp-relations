@@ -1,3 +1,9 @@
 test*
-out
+*.log
+*.aux
+*.d
+*.fls
+*.make
+*.out
+*.pdf
 task
