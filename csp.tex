@@ -169,17 +169,26 @@
 \begin{itemize}
 \item Операция вертикальной выборки $SELECT$:
 $\pi(x_1, \dots, x_n) SELECT X=\{x_1=\alpha_1, \ldots, x_k=\alpha_k\} \Longrightarrow$
-\item Операция отождествления входов~-- частный случай операции $SELECT$: $SELECT X=\{x_1=x_2=\dots=x_k\}$
 $\pi(\alpha_1, \dots, \alpha_k, x_{k+1}, \dots, x_n)$
+Эквивалентное определение: $\exists x_{k+1}, \dots, x_n: \pi(\alpha_1, \dots, \alpha_k, x_{k+1}, \dots, x_n)$. 
+В описании модели в статье (Боднарчука? Уточнить!) это частный случай операции суперпозиции~-- операция подстановки констант.
+\item Операция отождествления входов~-- частный случай операции $SELECT$: $SELECT X=\{x_1=x_2=\dots=x_k\}$
 \item Операция горизонтальной выборки $PROJECT$:
 $\pi(x_1, \dots, x_n)$ PROJECT $X=\{x_1, \dots, x_k\} \Longrightarrow \pi(x_k+1, \dots, x_n)$
+В описании модели в статье (Боднарчука? Уточнить!) это операция проекции.
 \item Операция декартового произведения CARTESIAN $(\otimes)$:
 $\pi_1(x_1, \dots, x_n)$ CARTESIAN $\pi_2(y_1, \dots, y_m) \Longrightarrow \pi(x_1, \dots, x_n, y_1, \dots, y_m)$
 $\Pi = \Pi_1 \otimes\Pi_2$.
+Эквивалентное определение: $\exists x_1, \dots, x_n, y_1, \dots, y_n: \pi_1(x_{1}, \dots, x_n)$
+$\& \pi_2(y_1, \dots, y_m)$
+В описании модели в статье (Боднарчука? Уточнить!) это операция конъюнкции.
 \item Операция отождествления $JOIN_k$ по $k$ переменным:
 $\pi_1(x_1, \dots, x_n) JOIN_k \pi_2(y_1, \dots, y_m) = \pi_1(x_1, \dots, x_k, x_{k+1}, \dots, x_n)$
 $SELECT X=\{\Pi_1(x_1, \dots, x_k) \bigcap \Pi_2(x_1, \dots, x_k)\}$ CARTESIAN $\pi_2(x_1, \dots, x_k, x_{k+1}, \dots, x_m)$
 $SELECT X=\{\Pi_1(x_2, \dots, x_k) \bigcap  \Pi_2(x_1, \dots, x_k)\}$ 
+Эквивалентное определение: $\exists x_1, \dots, x_n, y_1, \dots, y_m: \pi_1(x_{1}, \dots, x_k, x_{k+1}, \dots, x_n)$
+$\& \pi_2(x_1, \dots, x_k, y_{k+1}, \dots, y_m)$
+В описании модели в статье (Боднарчука? Уточнить!) это операция конъюнкции.
 \item Для удобства расширим набор доступных операций операцией NEGATE: 
 $\pi NEGATE X=\{x_1, \dots, x_k\} = \pi_1 JOIN_1 on x_1 JOIN \pi_2 on x_2 \dots JOIN \pi_k on x_k$, где $\pi_i = ((01), (10))$
 \end{itemize}
