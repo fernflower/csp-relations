@@ -354,14 +354,19 @@ $\pi_{linear}, \Pi_{linear} = \{ (001), (010), (100), (111) \}$, то замещ
 
 \label{eq:lemma_sm}
 \textbf{Лемма.} Если $\pi \notin SM$, то, применяя операции PROJECT и NEGATE,
-можно получить $\pi_{min} \notin SM$, подмножество наборов которого будет содержать симметричный Шефферов предикат.
+можно получить $\pi_{min} \notin SM$, причем $\Pi_{min}$ будет содержать симметричный Шефферов предикат.
 
 \textbf{Доказательство.} Рассмотрим $\pi_{min} \notin SM$ такой, что $\forall i, \pi_1 = \pi_{min} PROJECT x_i$, $\pi_1 \in SM$.
 Пусть $\beta = (\beta_1, \dots, \beta_k)$~-- набор, $\notin \pi_{min}$, полученный в результате применения какой-то несамодвойственной функции.
 Заметим, что $\beta \neq \forall \alpha \in \pi$. Однако, для соблюдения верхнего условия, $\Pi_{min}$ должно содержать наборы 
 $(\bar{\beta_1}, \beta_2, \dots, \beta_k), (\beta_1, \bar{\beta_2}, \dots, \beta_k), \dots, (\beta_1, \beta_2, \dots, \bar{\beta_k})$.
-Нетрудно видеть, что, применением операции PROJECT к переменным $\pi_{min}$, можно добиться, 
-чтобы эти наборы представляли собой в точности симметричный Шефферов предикат. 
+
+Так как класс $SM$ замкнут относительно операции NEGATE, применяя эту операцию к $\pi_{min}$ можно получить $\pi_{min}^1$,
+$\pi_{min}^1$ не содержит набор $\beta^1 = (\sigma, \sigma, \dots, \sigma)$. 
+Нетрудно видеть, 
+что в таком случае $\Pi_{min}^1$ содержат в точности симметричный Шефферов предикат.
+
+\textbf{Следствие.} $\pi \notin SM \Longrightarrow \exists \pi_{min} \notin SM, \alpha = (\sigma, \sigma, \dots, \sigma) \notin \Pi_{min}, \sigma \in \{0, 1\}$.
 
 \label{eq:svedenie}
 \textbf{Лемма.} Если $\pi(x_1, \dots, x_n) = Sch_{symm}^n, n > 3$, то, применяя операции подстановки констант и PROJECT, можно
@@ -372,10 +377,10 @@ $\pi \notin SM, \exists \widetilde{\alpha} = (\bar{\alpha}, \dots, \bar{\alpha})
 Тогда 
 $\pi_1 = ( (\pi SELECT x_1=\bar{\alpha})  PROJECT  x_1 )$, где $\pi_1(x_1, \dots, x_{n-1}) = Sch^{n-1}$
 
-\label{eq:3tuples}
-\textbf{Следствие.} Пусть $\pi(x_1, x_2, x_3) \notin SM$. 
-Тогда : $\pi_1 = (((\pi SELECT x_1=\bar{\alpha}) PROJECT x_1)$ и 
-$\Pi_1 = \{ (\bar{\alpha}\alpha), (\alpha\bar{\alpha}), (\alpha\alpha) \}$
+%\label{eq:3tuples}
+%\textbf{Следствие.} Пусть $\pi(x_1, x_2, x_3) \notin SM$. 
+%Тогда : $\pi_1 = (((\pi SELECT x_1=\bar{\alpha}) PROJECT x_1)$ и 
+%$\Pi_1 = \{ (\bar{\alpha}\alpha), (\alpha\bar{\alpha}), (\alpha\alpha) \}$
 
 Комбинируя \ref{eq:svedenie} и \ref{eq:3tuples}, получаем следующую лемму:
 
