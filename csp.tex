@@ -391,7 +391,7 @@ $\exists \pi \in B, \pi \notin S \Rightarrow \exists \alpha_1 \in \Pi, \bar{\alp
 \subsection{Получение отрицания}
 \begin{lemma}
 \label{eq:negate}
-Пусть дан полный базис B. Тогда, применением операций $|_{x_1, x_2}$, подстановки констант,
+Пусть дан полный базис B. Тогда, применением операций подстановки констант
 и $\perp$ к предикатам из B, можно получить предикат $\pi_{negate}$.
 \end{lemma}
 
@@ -430,7 +430,7 @@ $\perp_{\forall x_t, t \neq i,j}$
 \label{eq:planar_algo}
 Существует алгоритм преобразования непланарной предикатной схемы $\Sigma$ в базисе $B=\{\pi_{symm}^3\}$
 в планарную предикатную схему $\Sigma'$ в базисе B, добавляющий не более, чем 
-$\frac{81}{16} * n^2*(n-1)^2 $ предикатных элементов, где n ~-- количество предикатов в схеме $\Sigma$.
+$5 * n^2*(n-1)^2 $ предикатных элементов, где n ~-- количество предикатов в схеме $\Sigma$.
 \end{lemma}
 \begin{proof}
 Так как в базисе $B=\{\pi_{symm}^3\}$ можно планарной схемой реализовать предикат 
@@ -439,9 +439,9 @@ $\pi_{linear}, \Pi_{linear} = \{ (001), (010), (100), (111) \}$, то замещ
 в базисе B.
 
 Если $k$~-- количество реберных пересечений то, по теореме \ref{ZarankTheorem}, 
-$k \leq \lfloor \frac{n}{2} \rfloor \lfloor \frac{n-1}{2} \rfloor \lfloor \frac{3n}{2} \rfloor \lfloor \frac{3n-1}{2} \rfloor \le \frac{1}{16} * n^2*(n-1)^2$.
+$k \leq \lfloor \frac{n}{2} \rfloor \lfloor \frac{n-1}{2} \rfloor \lfloor \frac{3n}{2} \rfloor \lfloor \frac{3n-1}{2} \rfloor \le \lfloor \frac{9}{16} * n^2*(n-1)^2 \rfloor$.
 Так как для реализации $\pi_{linear}$ в B требуется 3 симметричных предиката, а для избавления
-от реберного перечения ~-- 3 предиката $\pi_{linear}$, получаем искомую оценку, $\bigtriangleup$.
+от реберного перечения ~-- 3 предиката $\pi_{linear}$, получаем, что требуется $3*3*k \leq \lfloor \frac{81}{16} * n^2 * (n-1)^2 \rfloor = 5 * n^2 * (n-1)^2$ предикатов, $\bigtriangleup$.
 
 \end{proof}
 
@@ -475,6 +475,7 @@ $(\bar{\beta_1}, \beta_2, \dots, \beta_k), (\beta_1, \bar{\beta_2}, \dots, \beta
 \end{proof}
 
 \begin{corollary}
+\label{lemma_sm_corollary}
 $\pi \notin SM \Longrightarrow \exists \pi_{min} \notin SM, \exists 
 \alpha = (\sigma, \sigma, \dots, \sigma) \notin \Pi_{min}, \sigma \in \{0, 1\}$.
 \end{corollary}
@@ -490,9 +491,9 @@ $\pi \notin SM \Longrightarrow \exists \pi_{min} \notin SM, \exists
 $ A \subseteq(\alpha \bar{\alpha} \alpha), (\alpha \alpha \bar{\alpha}), (\alpha \bar{\alpha} \alpha), (\alpha \alpha \alpha) \} $.
 
 Заметим, что во всех наборах из A от 2 до 3 координат равны $\alpha$, и $|A| = k, 1 \leq k \leq 4$.
-Таким образом, примененяя операцию суперпозиции с отождествлением по 2 переменным предиката $\pi(x_1, x_2, x_3)$ 
-и предиката $\pi_1(y_1, y_2)$, $\Pi_1 = \{ (\bar{\alpha}, \bar{\alpha}), (\bar{\alpha}, \alpha), (\alpha, \bar{\alpha})\}$,
-$(\pi|\pi_1)_{x_{i_1}=y_1, x_{i_2} =y_2}$ 
+Таким образом, примененяя операцию суперпозиции с отождествлением по 2 переменным
+($(\pi|\pi_1)_{x_{i_1}=y_1, x_{i_2} =y_2}$) предиката $\pi(x_1, x_2, x_3)$ 
+и предиката $\pi_1(y_1, y_2)$ с множеством наборов $\Pi_1 = \{ (\bar{\alpha}, \bar{\alpha}), (\bar{\alpha}, \alpha), (\alpha, \bar{\alpha})\}$,
 где $i_1 \neq i_2 \neq j$,
 \[ j = \left \{
   \begin{array}{l l}
@@ -501,11 +502,12 @@ $(\pi|\pi_1)_{x_{i_1}=y_1, x_{i_2} =y_2}$
             \end{array} \right. \]
 не более чем k раз, можно убрать ``лишние'' наборы и получить симметричный предикат.
 
-Остается получить предикат $\pi_1$.
-Рассмотрим 2 случая. 
+Остается получить предикат $\pi_1(x_1, x_2)$.
+Если $\pi_1(x_1, x_2)$ не получается из $\pi(x_1, x_2, x_3)$ проекцией по какой-либо переменной, то рассмотрим 2 случая. 
 
-1. Пусть $A \neq (\alpha, \alpha, \alpha)$. Тогда
-$\exists! \widetilde{\beta}=(\beta_1, \beta_2, \beta_3) \in A, \beta_t=\bar{\alpha}$. Подставив на место $t$-ой переменной
+1. Пусть $A \neq \{ (\alpha, \alpha, \alpha) \}$. Тогда
+$\exists! \widetilde{\beta}=(\beta_1, \beta_2, \beta_3) \in A, \beta_t=\bar{\alpha}$. 
+Подставив на место $t$-ой переменной
 предиката $\pi$ константу $\bar{\alpha}$, и спроецировав по переменной t получим: 
 $(\pi(x_1, x_2, x_3)|_{x_t=\bar{\alpha}} \perp_{x_t} )$ = 
 $\pi_1'(x_1, x_2), \Pi_1'=\{(\bar{\alpha}, \alpha), (\alpha, \bar{\alpha}), (\alpha, \alpha)\}$, из которого искомый предикат
@@ -514,7 +516,17 @@ $\pi_1$ получается применением операции $\neg$.
 В базисе из симметричного предиката $\pi_{symm}^3$ предикат $\pi_{linear}$ получается известным образом, с использованием 3
 предикатов $\pi_{symm}^3$.
 
-2. Пусть $A = (\alpha, \alpha, \alpha)$. Тогда $\pi=\pi_{linear}, \bigtriangleup$
+2. Пусть $A = \{ (\alpha, \alpha, \alpha) \}$. Тогда $\pi=\pi_{linear}, \bigtriangleup$
+\end{proof}
+
+\begin{corollary}
+Сложность получения предиката $\pi_{linear}$ из $\pi(x_1, x_2, x_3) \notin SM \leq 3$.
+\end{corollary}
+\begin{proof}
+$\pi_{\bar{\alpha}}$, в худшем случае, реализуется с использованием 2 предикатов; $\pi_{negate}$~-- с использованием 1 
+$\pi_{\alpha}$. Для получения предиката  $\pi_1(x_1, x_2)$ из $\pi'_1(x_1, x_2)$, в худшем случае может понадобится 2 отрицания.
+Итого $1 + 2 * 1 = 3$ предиката, $\bigtriangleup$.
+
 \end{proof}
 
 Следующие две леммы показывают как, применяя операции планарной суперпозиции, от симметричного предиката
@@ -540,7 +552,7 @@ $\pi_1 = ( (\pi|_{x_1=\alpha}) \perp_{x_1} )$, где $\pi_1(x_1, \dots, x_{n-1}
 \end{lemma}
 
 \begin{proof}
-По следствию из леммы \ref{eq:lemma_sm}, 
+По следствию \ref{lemma_sm_corollary}, 
 $\exists \pi_{min} \notin SM, \alpha=(\sigma, \dots, \sigma) \notin \Pi_{min}$. Тогда предикат $\pi_1$, такой что
 $\pi_1 = ( (\pi_{min}|_{x_1=\sigma}) \perp_{x_1} )$, не принадлежит $SM$, и зависит от $n-1$ переменной, $\bigtriangleup$.
 \end{proof}
@@ -586,7 +598,6 @@ $\pi_1 = ( (\pi_{min}|_{x_1=\sigma}) \perp_{x_1} )$, не принадлежит
 \label{fig:3_2to3}
 \end{figure}
 
-\ref{eq:svedenie}, как показано на рисунке \ref{fig:4to3}
 \begin{figure}[htb]
  \centering
 \includegraphics[width=0.6\textwidth]{4to3.png}
