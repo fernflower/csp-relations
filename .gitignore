@@ -9,3 +9,7 @@ test*
 task
 *.temp
 *~
+*.nav
+*.toc
+*.vrb
+*.snm
